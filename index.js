@@ -25,7 +25,11 @@ app.get('/', async (req, res) => {
 app.get('/anime/:slug', async (req, res) => {
     try {
         const animeDetail = await getAnimeDetail(req.params.slug);
-        res.json(animeDetail);
+        if (animeDetail.error) {
+            res.status(404).json(animeDetail);
+        } else {
+            res.json(animeDetail);
+        }
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to fetch anime detail' });
@@ -43,15 +47,17 @@ async function fetchURL(url) {
 // Fungsi untuk mendapatkan detail anime
 async function getAnimeDetail(slug) {
     const $ = await fetchURL(`https://nontonanimeid.cyou/anime/${slug}`);
-    
     const title = $('.entry-title.cs').text();
+    if (!title) {
+        return { error: 'Anime not found' };
+    }
+
     const imgSrc = $('.poster img').attr('src');
-    
     const extra = {};
     $('.extra').find('span').each((index, element) => {
         extra[$(element).attr('class')] = $(element).text().trim();
     });
-    
+
     const latestEpisode = {
         title: $('.latestepisode a').first().text(),
         href: $('.latestepisode a').first().attr('href')
@@ -60,12 +66,12 @@ async function getAnimeDetail(slug) {
         title: $('.latestepisode a').last().text(),
         href: $('.latestepisode a').last().attr('href')
     };
-    
+
     const tags = [];
     $('.tagline a').each((index, element) => {
         tags.push($(element).text());
     });
-    
+
     const infos = {};
     $('.infoseries').each((index, element) => {
         const infoText = $(element).text();
@@ -74,7 +80,7 @@ async function getAnimeDetail(slug) {
         const value = infoArr[1].trim();
         infos[key] = value;
     });
-    
+
     const description = $('.entry-content.seriesdesc p').text();
 
     // Mendapatkan detail episode
