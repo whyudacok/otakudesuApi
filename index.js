@@ -17,8 +17,13 @@ app.get('/episodeterbaru', async (req, res) => {
       extra[$(element).attr('class')] = $(element).text().trim();
     });
     
-    const latestEpisode = $('.latestepisode a').first().text();
-    const firstEpisode = $('.latestepisode a').last().text();
+    const latestEpisodeTitle = $('.latestepisode a').first().text();
+    const latestEpisodeHref = $('.latestepisode a').first().attr('href');
+    const latestEpisode = { title: latestEpisodeTitle, href: latestEpisodeHref };
+    
+    const firstEpisodeTitle = $('.latestepisode a').last().text();
+    const firstEpisodeHref = $('.latestepisode a').last().attr('href');
+    const firstEpisode = { title: firstEpisodeTitle, href: firstEpisodeHref };
     
     const tags = [];
     $('.tagline a').each((index, element) => {
