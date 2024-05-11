@@ -1,6 +1,6 @@
 const express = require('express');
-const cheerio = require('cheerio');
 const axios = require('axios');
+const cheerio = require('cheerio');
 
 const app = express();
 
@@ -68,8 +68,6 @@ app.get('/anime/:slug', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch anime data' });
   }
 });
-
-// Endpoint untuk scrape data episode terbaru
 app.get('/episodeterbaru', async (req, res) => {
   try {
     const response = await axios.get('https://nontonanimeid.cyou');
@@ -95,7 +93,6 @@ app.get('/episodeterbaru', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch episode data' });
   }
 });
-
 
 // Menjalankan server pada port tertentu
 const PORT = process.env.PORT || 3000;
