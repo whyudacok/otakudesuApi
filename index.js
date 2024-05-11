@@ -68,34 +68,12 @@ app.get('/anime/:slug', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch anime data' });
   }
 });
-app.get('/episodeterbaru', async (req, res) => {
-  try {
-    const response = await axios.get('https://nontonanimeid.cyou');
-    const $ = cheerio.load(response.data);
-    const episodeList = [];
-
-    $('article.animeseries').each((index, element) => {
-      const title = $(element).find('.title span').text();
-      const episodeNumber = $(element).find('.types.episodes').text();
-      const imgSrc = $(element).find('img').attr('src');
-      const href = $(element).find('a').attr('href');
-      
-      episodeList.push({ title, episodeNumber, imgSrc, href });
-    });
-
-    if (episodeList.length === 0) {
-      throw new Error('No episodes found');
-    }
-
-    res.json(episodeList);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch episode data' });
-  }
-});
 
 // Menjalankan server pada port tertentu
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+unning on port ${PORT}`);
+});
+      
