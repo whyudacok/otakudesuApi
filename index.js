@@ -9,25 +9,25 @@ app.get('/episodeterbaru', async (req, res) => {
     const response = await axios.get('https://nontonanimeid.cyou/anime/kaijuu-8-gou/');
     const $ = cheerio.load(response.data);
     
-    const title = $('.entry-title.cs').text();
-    const imgSrc = $('.poster img').attr('src');
+    const title = $('.entry-title.cs').text().trim();
+    const imgSrc = $('.poster img').attr('src').trim();
     
     const extra = {};
     $('.extra').find('span').each((index, element) => {
       extra[$(element).attr('class')] = $(element).text().trim();
     });
     
-    const latestEpisodeTitle = $('.latestepisode a').first().text();
-    const latestEpisodeHref = $('.latestepisode a').first().attr('href');
+    const latestEpisodeTitle = $('.latestepisode a').first().text().trim();
+    const latestEpisodeHref = $('.latestepisode a').first().attr('href').trim();
     const latestEpisode = { title: latestEpisodeTitle, href: latestEpisodeHref };
     
-    const firstEpisodeTitle = $('.latestepisode a').last().text();
-    const firstEpisodeHref = $('.latestepisode a').last().attr('href');
+    const firstEpisodeTitle = $('.latestepisode a').last().text().trim();
+    const firstEpisodeHref = $('.latestepisode a').last().attr('href').trim();
     const firstEpisode = { title: firstEpisodeTitle, href: firstEpisodeHref };
     
     const tags = [];
     $('.tagline a').each((index, element) => {
-      tags.push($(element).text());
+      tags.push($(element).text().trim());
     });
     
     const infos = {};
@@ -39,13 +39,13 @@ app.get('/episodeterbaru', async (req, res) => {
       infos[key] = value;
     });
     
-    const description = $('.entry-content.seriesdesc p').text();
+    const description = $('.entry-content.seriesdesc p').text().trim();
     
     const episodes = [];
     $('.episodelist .misha_posts_wrap2 li').each((index, element) => {
-      const episodeTitle = $(element).find('a').text();
-      const episodeDate = $(element).find('.t3').text();
-      const episodeUrl = $(element).find('a').attr('href');
+      const episodeTitle = $(element).find('a').text().trim();
+      const episodeDate = $(element).find('.t3').text().trim();
+      const episodeUrl = $(element).find('a').attr('href').trim();
       episodes.push({ episodeTitle, episodeDate, episodeUrl });
     });
     
