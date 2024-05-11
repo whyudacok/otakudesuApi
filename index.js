@@ -1,71 +1,66 @@
 const express = require('express');
-const cheerio = require('cheerio');
 const axios = require('axios');
+const cheerio = require('cheerio');
 
 const app = express();
-
-app.get('/anime/:slug', async (req, res) => {
-    const slug = req.params.slug;
-    const animeUrl = `https://nontonanimeid.cyou/anime/${slug}/`;
-
-    try {
-        const animeData = await scrapeAnimeInfo(animeUrl);
-        res.json(animeData);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch anime data' });
-    }
-});
+const port = process.env.PORT || 3000;
 
 async function scrapeAnimeInfo(url) {
     try {
         const response = await axios.get(url);
         const $ = cheerio.load(response.data);
 
+        // Check if the HTML element exists
+        if (!$('.entry-title.cs').length) {
+            throw new Error('Anime data not found');
+        }
+
+        // Scraping logic
         const title = $('.entry-title.cs').text();
         const imgSrc = $('.poster img').attr('src');
-
-        const extra = {};
-        $('.extra span').each((index, element) => {
-            extra[$(element).attr('class')] = $(element).text().trim();
+        const status = $('.statusseries').text();
+        const duration = $('.durasiseries').text();
+        const rating = $('.nilaiseries').text();
+        const aired = $('.infoseries:contains("Aired:")').text().replace('Aired: ', '');
+        const genres = [];
+        $('.tagline a').each((index, element) => {
+            genres.push($(element).text());
         });
 
-        const latestEpisode = {
-            title: $('.latestepisode').first().text().trim(),
-            href: $('.latestepisode a').first().attr('href')
+        const lastEpisode = {
+            title: $('.latestest .latestheader').eq(0).text(),
+            link: $('.latestest .latestepisode a').eq(0).attr('href')
         };
+
         const firstEpisode = {
-            title: $('.latestepisode').last().text().trim(),
-            href: $('.latestepisode a').last().attr('href')
+            title: $('.latestest .latestheader').eq(1).text(),
+            link: $('.latestest .latestepisode a').eq(1).attr('href')
         };
 
-        const infoSeries = {};
-        $('.infoseries').each((index, element) => {
-            const key = $(element).find('b').text().replace(':', '').trim();
-            const value = $(element).text().replace(key + ':', '').trim();
-            infoSeries[key] = value;
+        const synopsis = $('.entry-content.seriesdesc p').text();
+
+        const episodes = [];
+        $('.episodelist ul li').each((index, element) => {
+            const episodeTitle = $(element).find('.t1 a').text();
+            const episodeDate = $(element).find('.t3').text();
+            const episodeLink = $(element).find('.t1 a').attr('href');
+            episodes.push({ title: episodeTitle, date: episodeDate, link: episodeLink });
         });
 
-        const seriesDescription = $('.seriesdesc p').text().trim();
-
-        const episodeList = [];
-        $('.misha_posts_wrap2 li').each((index, element) => {
-            const episodeTitle = $(element).find('.t1 a').text().trim();
-            const episodeDate = $(element).find('.t3').text().trim();
-            const episodeUrl = $(element).find('.t1 a').attr('href');
-            episodeList.push({ title: episodeTitle, date: episodeDate, url: episodeUrl });
-        });
-
+        // Construct and return animeData object
         const animeData = {
-            title: title,
-            imgSrc: imgSrc,
-            extra: extra,
-            latestEpisode: latestEpisode,
-            firstEpisode: firstEpisode,
-            infoSeries: infoSeries,
-            seriesDescription: seriesDescription,
-            episodeList: episodeList
-        };
-
+            title,
+            imgSrc,
+            status,
+            duration,
+            rating,
+            aired,
+            genres,
+            lastEpisode,
+            firstEpisode,
+            synopsis,
+            episodes
+        }; // Modify according to your scraping logic
         return animeData;
     } catch (error) {
         console.error('Failed to fetch anime data:', error);
@@ -73,7 +68,18 @@ async function scrapeAnimeInfo(url) {
     }
 }
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.get('/anime/:slug', async (req, res) => {
+    const { slug } = req.params;
+    const url = `https://nontonanimeid.cyou/anime/${slug}`;
+
+    try {
+        const animeData = await scrapeAnimeInfo(url);
+        res.json(animeData);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch anime data' });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
 });
